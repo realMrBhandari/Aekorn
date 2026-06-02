@@ -1,6 +1,10 @@
 # ? core modules
-from core.add_transactions import record_transaction
+from core.add_transactions import log_transaction
 from core.transaction_history import display_transactions
+
+# ? Prototype futures
+from dev.onboarding import start_Onboarding
+from dev.dashboard import FinCLI_Dashboard
 
 # ? Database realted module
 from database.setup_db import create_database
@@ -12,22 +16,24 @@ import sys
 # ! following code will create database if it does not exist
 file_path = Path("database/fincil.db")
 if not file_path.is_file():
+    start_Onboarding()
     create_database()
+
 
 # # Menu starts from here
 menu = """\033[1;33m===========================================================================
-                              FinCLI Finance Menu
-===========================================================================\n [1] Record Transactions\n [2] View Transactions \n [3] Balance Overview \n [4] Monthly Sepnding Summary \n [5] Exit \n===========================================================================\033[0m \n"""
+
+===========================================================================\n [1] Record Transactions\n [2] View Transactions \n [3] Dashbaord \n [4] Monthly Sepnding Summary \n [5] Exit \n===========================================================================\033[0m \n"""
 
 
 # ! action dispatcher, for triggering appropriate functionality based on user's choice
 def trigger_action(trigger):
     if trigger == "1":
-        record_transaction()
+        log_transaction()
     elif trigger == "2":
         display_transactions()
     elif trigger == "3":
-        print("Under Development")
+        FinCLI_Dashboard()
     elif trigger == "4":
         print("Under Development")
     elif trigger == "5" or "exit" or "EXIT":
