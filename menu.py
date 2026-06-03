@@ -7,7 +7,7 @@ from dev.onboarding import start_Onboarding
 from dev.dashboard import FinCLI_Dashboard
 
 # ? Database realted module
-from database.setup_db import create_database
+from sql.setup_db import create_database
 
 # ? 3rd party modules
 from pathlib import Path

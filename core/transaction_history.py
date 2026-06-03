@@ -1,5 +1,5 @@
 from tabulate import tabulate
-from database.fetching_data import fetch_tranasctions
+from sql.fetching_data import fetch_All_tranasctions
 
 # ? tabulate specific formatting
 
@@ -7,7 +7,7 @@ from database.fetching_data import fetch_tranasctions
 def display_transactions():
     print(
         tabulate(
-            fetch_tranasctions(),
+            fetch_All_tranasctions(),
             headers=[
                 "Date",
                 "Type",

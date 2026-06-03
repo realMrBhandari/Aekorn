@@ -1,6 +1,6 @@
 from tabulate import tabulate
 import sql.account_summary as account_overview
-import database.fetching_data as fetch
+import sql.fetching_data as fetch
 
 
 def FinCLI_Dashboard():

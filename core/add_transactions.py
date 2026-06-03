@@ -1,12 +1,12 @@
 # ! All input modules from core/input
-from database.insert_statement import append_transaction
+from sql.insert_statement import append_transaction
 from utilities import cli_input_helpers as help_input
 
 # TODO [2]: fix function naming develop a pattern
 # TODO [3]: FIX QUERIES REQUIRING COMMIT VS NON COMMIT
 
 
-def record_transaction():
+def log_transaction():
     # ?Basic Flow of programme:  [transaction amount] --> [type of transaction (income/expense?)] --> [transaction category] --> [transaction date] --> [transaction metadata (account, mode, node)]
     transaction_amount = help_input.amount_processor()
 

@@ -1,5 +1,6 @@
 from utilities.amount_validator import isItFloat
 from datetime import datetime, date
+import calendar
 
 red = "\033[31m"
 green = "\033[32m"
@@ -12,7 +13,7 @@ reset = "\033[0m"
 ## this function deals with processing validating input amount
 def amount_processor():
 
-    input_amt = input("Please input transaction amount: ")
+    input_amt = input("Please input amount: ")
 
     # ? Short circuit is preventing programme from crashing here.
     while (not isItFloat(input_amt)) or float(input_amt) <= 0:
@@ -22,7 +23,7 @@ def amount_processor():
         elif float(input_amt) <= 0:
             print(f"{red}Your input {input_amt} is equal to 0{reset}.")
 
-        input_amt = input("Please input transaction income amount: ")
+        input_amt = input("Please input amount: ")
 
     amt_normalized = round(float(input_amt), 2)
     return amt_normalized
@@ -122,15 +123,40 @@ def map_transaction_category(choice):
 
 ## transaction date mapping module
 
-# todo --------------------------------------------------------------------------
-# todo: [1] Refactor code using DRY
-# todo: [2] Reduce compute
-# todo: [3] Follow a clear variable name pattern
-# todo --------------------------------------------------------------------------
-
-
 red = "\033[31m"
 reset = "\033[0m"
+
+
+def print_invalid():
+    print(f"{red}Attention User! Invalid Input, try again!{reset}")
+
+
+def get_valid_input(prompt, validator, error_message=None):
+    value = input(prompt).strip()
+
+    while not validator(value):
+        if error_message:
+            print(error_message)
+        else:
+            print_invalid()
+
+        value = input(prompt).strip()
+
+    return value
+
+
+def is_valid_year(year):
+    current_year = datetime.now().year
+
+    return year.isnumeric() and len(year) == 4 and 2000 <= int(year) <= current_year
+
+
+def is_valid_month(month, max_month):
+    return month.isnumeric() and 1 <= int(month) <= max_month
+
+
+def is_valid_day(day, max_day):
+    return day.isnumeric() and 1 <= int(day) <= max_day
 
 
 def ask_transaction_date():
@@ -139,153 +165,99 @@ def ask_transaction_date():
  [2] Earlier this month
  [3] A specific date\n""")
 
-    #  Processing and validating user's choice
-    user_input = input("Please provide an option: ").strip(" ")
-    while user_input not in ["1", "2", "3"]:
-        print(f"\033[31mAttention User! Invalid Input, try again! \033[0m")
-        user_input = input("Please provide an option b/w 1 & 3: ")
+    user_input = get_valid_input(
+        "Please provide an option: ",
+        lambda x: x in ["1", "2", "3"],
+        f"{red}Attention User! Invalid Input, try again! {reset}",
+    )
 
-    #  Making decision on user's choice for determining date for trnaction
-    if user_input == "1":  # gives us today's date
-        transaction_date = datetime.now().date().strftime("%Y-%m-%d")
+    # Option 1 → Today's date
+    if user_input == "1":
+        return datetime.now().date().strftime("%Y-%m-%d")
 
-    elif user_input == "2":
+    # Option 2 → Earlier this month
+    if user_input == "2":
         current_day = date.today().day
-        earlier_date = input("Please provide tranasction date: ")
-        while not earlier_date.isnumeric() or int(earlier_date) > current_day:
-            if not earlier_date.isnumeric():
-                print(f"{red}Invalid Input! {earlier_date} is not a number!{reset}")
-            else:
-                print(f"{red}Provided date {earlier_date} excceds current date{reset}")
-            earlier_date = input("Please provide tranasction date: ")
-        transaction_date = f"{datetime.now().strftime("%Y-%m")}-{earlier_date.zfill(2)}"
 
-    else:  # will let user's manually provide date
-        # //  Transaction Year -> year, ya to current year ke equal ho ya fir current year se lesser ho, agar input year current se jayda hai to loop karo taki correct year mil sake
-        print(
-            f"\033[33m*Numeric: Can only record YEAR between 2000 and {datetime.now().date().year}\033[0m"
+        def earlier_date_validator(x):
+            if not x.isnumeric():
+                print(f"{red}Invalid Input! {x} is not a number!{reset}")
+                return False
+
+            if int(x) > current_day:
+                print(f"{red}Provided date {x} exceeds current date{reset}")
+                return False
+
+            return True
+
+        earlier_date = get_valid_input(
+            "Please provide transaction date: ",
+            earlier_date_validator,
         )
-        transaction_date_year = input("Transaction YEAR: ").strip(" ")
-        while (
-            (
-                not transaction_date_year.isnumeric()
-                or not len(transaction_date_year) == 4
-            )
-            or (
-                not int(transaction_date_year) == datetime.now().date().year
-                and not int(transaction_date_year) < datetime.now().date().year
-            )
-            or int(transaction_date_year) < 2000
-        ):
-            print("\033[31mAttention User! Invalid Input, try again!\033[0m")
-            transaction_date_year = input(
-                "Please provide a valid Transaction Year: "
-            ).strip(" ")
 
-        # // Transaction Month; 2026 curent date -> month current month ke equal ho ya fir current month se lesser | if year < 2026 -> allow 1 - 12
+        return f"{datetime.now().strftime('%Y-%m')}-{earlier_date.zfill(2)}"
 
-        if int(transaction_date_year) == datetime.now().date().year:
-            print(
-                f"\033[33m*Numeric: Can only record MONTH between 1 and current month({datetime.now().date().month})\033[0m"
-            )
-            transaction_date_month = input("Transaction MONTH: ").strip(" ")
-            while (
-                not transaction_date_month.isnumeric()
-                or not int(transaction_date_month) <= datetime.now().date().month
-            ):
-                print("\033[31mAttention User! Invalid Input, try again!\033[0m")
-                transaction_date_month = input(
-                    "Please provide a valid Transaction Month: "
-                ).strip(" ")
-        elif int(transaction_date_year) < datetime.now().date().year:
-            print(f"\033[33m*Numeric: Can only record MONTH between 1 and 12\033[0m")
-            transaction_date_month = input(
-                f"Transaction MONTH for year {transaction_date_year}: "
-            ).strip(" ")
-            while not transaction_date_month.isnumeric() or int(
-                transaction_date_month
-            ) not in range(1, 13):
-                print("\033[31mAttention User! Invalid Input, try again!\033[0m")
-                transaction_date_month = input(
-                    "Please provide a valid Transaction Month: "
-                ).strip(" ")
-        # // Transaction Date: 31 range in [1,3,5,7,8,10,12]; 30 days in [4,6,9,11]; 2 - 28/29 based on leap year.
-        if (
-            int(transaction_date_year) == datetime.now().date().year
-            and int(transaction_date_month) == datetime.now().date().month
-        ):
-            print(
-                f"\033[33m*Numeric: Can only record DAY between 1 and {datetime.now().date().day}\033[0m"
-            )
-            transaction_date_day = input("Transaction DAY: ").strip(" ")
-            while (
-                not transaction_date_day.isnumeric()
-                or not int(transaction_date_day) <= datetime.now().date().day
-                or int(transaction_date_day) < 1
-            ):
-                print("\033[31mAttention User! Invalid Input, try again!\033[0m")
-                transaction_date_day = input(
-                    "Please provide a valid Transaction Day: "
-                ).strip(" ")
-        else:
-            if transaction_date_month in ["1", "3", "5", "7", "8", "10", "12"]:
-                print(f"\033[33m*Numeric: Can only record DAY between 1 and 31\033[0m")
-                transaction_date_day = input(
-                    f"Transaction DAY for month {datetime.now().date().month}: "
-                ).strip(" ")
-                while not transaction_date_day.isnumeric() or int(
-                    transaction_date_day
-                ) not in range(1, 32):
-                    transaction_date_day = input(
-                        "Please provide a valid Transaction Day: "
-                    ).strip(" ")
-            elif transaction_date_month in ["4", "6", "9", "11"]:
-                print("\033[33m*Numeric: Can only record DAY between 1 and 30\033[0m")
-                transaction_date_day = input(
-                    f"Transaction DAY for month {datetime.now().date().month}: "
-                ).strip(" ")
-                while (
-                    not transaction_date_day.isnumeric()
-                    or transaction_date_day not in range(1, 31)
-                ):
-                    print("\033[31mAttention User! Invalid Input, try again!\033[0m")
-                    transaction_date_day = input(
-                        "Please provide a valid Transaction Day: "
-                    ).strip(" ")
-            elif transaction_date_month == "2":
-                if (
-                    int(transaction_date_year) % 4 == 0
-                    and int(transaction_date_year) % 100 != 0
-                ) or (int(transaction_date_year) % 400 == 0):
-                    print(
-                        f"\033[33m*Numeric: Can only record DAY between 1 and 29\033[0m"
-                    )
-                    transaction_date_day = input("Transaction DAY: ").strip(" ")
-                    while not transaction_date_day.isnumeric() or int(
-                        transaction_date_day
-                    ) not in range(1, 30):
-                        print(
-                            "\033[31mAttention User! Invalid Input, try again!\033[0m"
-                        )
-                        transaction_date_day = input(
-                            "Please provide a valid Transaction Day: "
-                        ).strip(" ")
-                else:
-                    print(
-                        f"\033[33m*Numeric: Can only record DAY between 1 and 28\033[0m"
-                    )
-                    transaction_date_day = input("Transaction DAY: ").strip(" ")
-                    while not transaction_date_day.isnumeric() or int(
-                        transaction_date_day
-                    ) not in range(1, 29):
-                        print(
-                            "\033[31mAttention User! Invalid Input, try again!\033[0m"
-                        )
-                        transaction_date_day = input(
-                            "Please provide a valid Transaction Day: "
-                        ).strip(" ")
-        transaction_date = f"{transaction_date_year}-{transaction_date_month.zfill(2)}-{transaction_date_day.zfill(2)}"
-    return transaction_date
+    # Option 3 → Specific date
+    current_date = datetime.now().date()
+    current_year = current_date.year
+    current_month = current_date.month
+    current_day = current_date.day
+
+    print(
+        f"\033[33m*Numeric: Can only record YEAR between 2000 and {current_year}\033[0m"
+    )
+
+    transaction_date_year = get_valid_input(
+        "Transaction YEAR: ",
+        is_valid_year,
+    )
+
+    transaction_year = int(transaction_date_year)
+
+    # Month validation
+    if transaction_year == current_year:
+        max_month = current_month
+
+        print(
+            f"\033[33m*Numeric: Can only record MONTH between 1 and current month({current_month})\033[0m"
+        )
+    else:
+        max_month = 12
+
+        print("\033[33m*Numeric: Can only record MONTH between 1 and 12\033[0m")
+
+    transaction_date_month = get_valid_input(
+        f"Transaction MONTH for year {transaction_date_year}: ",
+        lambda x: is_valid_month(x, max_month),
+    )
+
+    transaction_month = int(transaction_date_month)
+
+    # Day validation
+    if transaction_year == current_year and transaction_month == current_month:
+        max_day = current_day
+
+        print(
+            f"\033[33m*Numeric: Can only record DAY between 1 and {current_day}\033[0m"
+        )
+    else:
+        max_day = calendar.monthrange(
+            transaction_year,
+            transaction_month,
+        )[1]
+
+        print(f"\033[33m*Numeric: Can only record DAY between 1 and {max_day}\033[0m")
+
+    transaction_date_day = get_valid_input(
+        "Transaction DAY: ",
+        lambda x: is_valid_day(x, max_day),
+    )
+
+    return (
+        f"{transaction_date_year}-"
+        f"{transaction_date_month.zfill(2)}-"
+        f"{transaction_date_day.zfill(2)}"
+    )
 
 
 # //============================================================================================================================================================================================================
