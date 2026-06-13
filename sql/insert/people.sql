@@ -1,0 +1,1 @@
+INSERT INTO people (person_name, relationship) VALUES (?,?)
