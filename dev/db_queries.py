@@ -54,5 +54,12 @@ class QueryHandler:
     def log_income_transaction(
         amt, date, category, account_id, note, cur, type="INCOME"
     ):
-        with open("Sql/insert_income_expense.sql", "r") as file:
+        with open("sql/insert_income_expense.sql", "r") as file:
+            cur.execute(file.read(), (amt, type, date, category, account_id, note))
+
+    @staticmethod
+    def log_expense_transaction(
+        amt, date, category, account_id, note, cur, type="EXPENSE"
+    ):
+        with open("sql/insert_income_expense.sql", "r") as file:
             cur.execute(file.read(), (amt, type, date, category, account_id, note))
