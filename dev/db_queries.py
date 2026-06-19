@@ -19,7 +19,7 @@ class QueryHandler:
         return mapped_accounts
 
     @staticmethod
-    def fetch_account_balances():
+    def fetch_all_account_balances():
         connection = sqlite3.connect("database/FinCLI.db")
         cursor = connection.cursor()
         cursor.execute("SELECT account_id, running_balance FROM accounts")
@@ -31,3 +31,28 @@ class QueryHandler:
         cursor.close()
         connection.close()
         return balance_data
+
+    @staticmethod
+    def get_individual_balance(account_id):
+        connection = sqlite3.connect("database/FinCLI.db")
+        cursor = connection.cursor()
+        cursor.execute(
+            "SELECT running_balance FROM accounts WHERE account_id = ?", (account_id,)
+        )
+        fetched_balance = cursor.fetchall()
+        running_balance = fetched_balance[0][0]
+        cursor.close()
+        connection.close()
+        return running_balance
+
+    @staticmethod
+    def update_account_balance(cur, account_id, new_balance):
+        with open("sql/update_account.sql", "r") as file:
+            cur.execute(file.read(), (account_id, new_balance))
+
+    @staticmethod
+    def log_income_transaction(
+        amt, date, category, account_id, note, cur, type="INCOME"
+    ):
+        with open("Sql/insert_income_expense.sql", "r") as file:
+            cur.execute(file.read(), (amt, type, date, category, account_id, note))
