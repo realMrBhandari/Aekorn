@@ -1,1 +1,0 @@
-INSERT INTO income_expense (txn_amount, entry_type, txn_date,txn_category, account, note) VALUES (?,?,?,?,?,?);

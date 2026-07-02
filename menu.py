@@ -1,5 +1,5 @@
 # ? core modules
-from core.add_transactions import log_transaction
+from cli.core.add_transactions import log_transaction
 from core.transaction_history import display_transactions
 
 # ? Prototype futures
