@@ -1,0 +1,1 @@
+DELETE FROM budgets WHERE budget_month = ?;

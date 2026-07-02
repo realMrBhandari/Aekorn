@@ -1,0 +1,1 @@
+INSERT INTO budgets (budget_month, budget_amount) VALUES (?,?);
