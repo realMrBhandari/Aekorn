@@ -1,1 +1,0 @@
-INSERT INTO accounts (bank_account_name, running_balance) VALUES (?, ?);

@@ -1,1 +1,0 @@
-INSERT INTO obligations (person,obligation_type, obligation_date, principal_amt) VALUES (?,?,?,?);
