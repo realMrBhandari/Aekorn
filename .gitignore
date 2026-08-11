@@ -12,3 +12,4 @@ data/transactions.json
 financial_dashboard.py
 sandbox.py
 *.db
+
