@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.core.validators import MinValueValidator
 
 
 # Create your models here.
@@ -14,15 +15,24 @@ class MoneyAccount(models.Model):
     account_id = models.BigAutoField(primary_key=True)
     account_name = models.CharField(max_length=100)
     account_category = models.CharField(max_length=10)
-    running_balance = models.DecimalField(max_digits=15, decimal_places=2)
+    running_balance = models.DecimalField(
+        max_digits=15, decimal_places=2, validators=[MinValueValidator(1)]
+    )
     registred_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
 
 
+# class TransactionCategories(models.TextChoices):
+#     # todo learn enum and move all the choice fields as an enum field || For numeric based choices we will use IntegerChoices, and for character ones we will use TextChoices
+#     pass
+
+
 class Transaction(models.Model):
     txn_id = models.BigAutoField(primary_key=True)
-    txn_amt = models.DecimalField(max_digits=15, decimal_places=2)
+    txn_amt = models.DecimalField(
+        max_digits=15, decimal_places=2, validators=[MinValueValidator(1)]
+    )
     txn_account = models.ForeignKey(MoneyAccount, on_delete=models.RESTRICT)
     txn_date = models.DateField()
     txn_type = models.CharField(
@@ -70,41 +80,10 @@ class Counterparty(models.Model):
 class ObligationRecord(models.Model):
     base_transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE)
     counterparty_name = models.ForeignKey(Counterparty, on_delete=models.PROTECT)
-    returned_amt = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
+    returned_amt = models.DecimalField(
+        max_digits=15, decimal_places=2, default=0.00, validators=[MinValueValidator(1)]
+    )
     # pending_amt = models.DecimalField(max_digits=15, decimal_places=2) WILL DERIVE PENDING AMOUNT USING BUSINESS LOGIC
     is_obligation_active = models.BooleanField(default=True)
     updated_on = models.DateTimeField(auto_now=True)
     # if is_obligation_active == False: updated_on will be trated as closure date
-
-
-# class InvestmentRecord(models.Model):
-#     pass
-
-
-# ! will be part of investments app for now keeping it here only
-
-
-class AssetBrokerage(models.Model):
-    brokerage_id = models.BigAutoField(primary_key=True)
-    brokerage_name = models.CharField(max_length=25)
-    created_on = models.DateTimeField(auto_now_add=True)
-
-
-class Assets(models.Model):
-    base_transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE)
-    asset_id = models.BigAutoField(primary_key=True)
-    asset_exchange = models.CharField(
-        max_length=3, choices=[("BSE", "BSE"), ("NSE", "NSE")]
-    )
-    asset_brokerage = models.ForeignKey(AssetBrokerage, on_delete=models.RESTRICT)
-    asset_price = models.DecimalField(max_digits=15, decimal_places=2)
-    asset_symbl = models.CharField(max_length=10)
-    buy_qty = models.PositiveIntegerField(default=0)
-    sold_qty = models.PositiveIntegerField(default=0)
-    current_holdings = models.GeneratedField(
-        expression=models.F("buy_qty") - models.F("sold_qty"),
-        output_field=models.PositiveIntegerField(),
-        db_persist=True,
-    )
-
-    updated_at = models.DateTimeField(auto_now=True)
